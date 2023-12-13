@@ -1,8 +1,9 @@
+---
 # https://medium.com/@mprzygrodzki/argocd-applicationsset-with-helm-72bb6362d494
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: vault
+  name: core-helm-apps
   namespace: openshift-gitops
 spec:
   generators:
@@ -16,6 +17,9 @@ spec:
               elements:
               - appName: vault
                 namespace: vault
+                helmRepoURL: 'https://helm.releases.hashicorp.com/'
+                helmRevision: 0.26.1
+                helmChartName: vault
   template:
     metadata:
       name: "{{name}}-{{appName}}"
@@ -24,12 +28,12 @@ spec:
     spec:
       project: default
       sources:
-        - chart: vault
+        - chart: '{{helmChartName}}'
           helm:
             valueFiles:
               - "$values/clusters/{{name}}/helm-values/{{appName}}.values.yml"
-          repoURL: 'https://helm.releases.hashicorp.com/'
-          targetRevision: 0.26.1
+          repoURL: '{{helmRepoURL}}'
+          targetRevision: '{{helmRevision}}'
         - ref: values
           repoURL: 'https://github.com/kenmoini/ocp-gitops-appset'
           targetRevision: main
